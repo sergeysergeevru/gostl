@@ -55,6 +55,7 @@ func readBinary() {
 		V: [3]model.Vertex{model.Vertex{Reader: model.BinaryStlReader{}}, model.Vertex{Reader: model.BinaryStlReader{}}, model.Vertex{Reader: model.BinaryStlReader{}}},
 	}
 	outFile, err := os.Create("out.cnc")
+	defer outFile.Close()
 	if err != nil {
 		panic(err)
 	}
