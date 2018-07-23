@@ -54,10 +54,28 @@ func readBinary() {
 		N: model.Normal{Reader: model.BinaryStlReader{}},
 		V: [3]model.Vertex{model.Vertex{Reader: model.BinaryStlReader{}}, model.Vertex{Reader: model.BinaryStlReader{}}, model.Vertex{Reader: model.BinaryStlReader{}}},
 	}
-	t.N.GetFromLine(reader)
-	t.V[0].GetFromLine(reader)
-	t.V[1].GetFromLine(reader)
-	t.V[2].GetFromLine(reader)
-	t.V.GetIntersection(3.926045)
-	fmt.Println(t)
+	outFile, err := os.Create("out.cnc")
+	if err != nil {
+		panic(err)
+	}
+	for i:= uint32(0); i < size; i++ {
+		t.N.GetFromLine(reader)
+		t.V[0].GetFromLine(reader)
+		t.V[1].GetFromLine(reader)
+		t.V[2].GetFromLine(reader)
+		var byteCount uint16
+		binary.Read(reader, binary.LittleEndian, &byteCount)
+		fmt.Println(byteCount)
+		//t.V.GetIntersection(4)
+		//fmt.Println(t.GetZRange())
+		segments := t.GetPerimeterSegments(0.05)
+		for _,v := range segments {
+			outFile.WriteString(fmt.Sprintf("G1 Z%0.3f F3000.000 \n", v.Z))
+			outFile.WriteString(fmt.Sprintf("G1 X%.3f Y%.3f \n", v.V[0].X,v.V[0].Y))
+			outFile.WriteString(fmt.Sprintf("G1 X%.3f Y%.3f \n", v.V[1].X,v.V[1].Y))
+		}
+
+
+		//fmt.Println(t)
+	}
 }
