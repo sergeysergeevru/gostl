@@ -25,15 +25,20 @@ func (t Triangle) GetZRange() (zMin, zMax StlFractionalType){
 	return
 }
 
-func (t Triangle) GetPerimeterSegments(step StlFractionalType) []*PerimeterLineSegment {
+type LayerSegment struct {
+	N int
+	Segment *PerimeterLineSegment
+}
+
+func (t Triangle) GetPerimeterSegments(step StlFractionalType) []*LayerSegment {
 	zMin, zMax := t.GetZRange()
 	tMin := math.Ceil(float64(zMin / step))
 	tMax := math.Floor(float64(zMax / step))
 	//fmt.Println("min max,", tMin,tMax)
-	var segments []*PerimeterLineSegment
+	var segments []*LayerSegment
 	for i := tMin; i <= tMax; i++ {
 		//fmt.Println(i)
-		segments = append(segments, t.V.GetIntersection(StlFractionalType(i)*step))
+		segments = append(segments, &LayerSegment{int(i),t.V.GetIntersection(StlFractionalType(i)*step)})
 	}
 	return segments
 }

@@ -59,6 +59,8 @@ func readBinary() {
 	if err != nil {
 		panic(err)
 	}
+	step := model.StlFractionalType(0.05)
+	layers := make(map[model.StlFractionalType][]*model.PerimeterLineSegment)
 	for i:= uint32(0); i < size; i++ {
 		t.N.GetFromLine(reader)
 		t.V[0].GetFromLine(reader)
@@ -69,14 +71,20 @@ func readBinary() {
 		fmt.Println(byteCount)
 		//t.V.GetIntersection(4)
 		//fmt.Println(t.GetZRange())
-		segments := t.GetPerimeterSegments(0.05)
+		segments := t.GetPerimeterSegments(step)
 		for _,v := range segments {
-			outFile.WriteString(fmt.Sprintf("G1 Z%0.3f F3000.000 \n", v.Z))
-			outFile.WriteString(fmt.Sprintf("G1 X%.3f Y%.3f \n", v.V[0].X,v.V[0].Y))
-			outFile.WriteString(fmt.Sprintf("G1 X%.3f Y%.3f \n", v.V[1].X,v.V[1].Y))
+			layers[model.StlFractionalType(v.N)*step] = append(layers[model.StlFractionalType(v.N)*step], v.Segment)
+			//outFile.WriteString(fmt.Sprintf("G0 Z%0.3f F3000.000 \n", v.Z))
+			//outFile.WriteString(fmt.Sprintf("G0 X%.3f Y%.3f \n", v.V[0].X,v.V[0].Y))
+			//outFile.WriteString(fmt.Sprintf("G1 X%.3f Y%.3f \n", v.V[1].X,v.V[1].Y))
 		}
-
-
 		//fmt.Println(t)
+	}
+	for z, v := range layers {
+		outFile.WriteString(fmt.Sprintf("G1 Z%0.3f F3000.000 \n", z))
+		for _, item := range v {
+			outFile.WriteString(fmt.Sprintf("G1 X%.3f Y%.3f \n", item.V[0].X, item.V[0].Y))
+			outFile.WriteString(fmt.Sprintf("G1 X%.3f Y%.3f \n", item.V[1].X, item.V[1].Y))
+		}
 	}
 }
